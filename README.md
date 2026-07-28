@@ -4,7 +4,7 @@
 [![CI](https://github.com/afterimage-lab/Rainform/actions/workflows/ci.yml/badge.svg)](https://github.com/afterimage-lab/Rainform/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-4c4c4c)](LICENSE)
 
-![Rainform social preview](public/social-preview.png)
+![Rainform social preview](public/social-preview.jpg)
 
 Rainform（数据成雨）把 00:00–24:00 的 25 个逐时降雨数据点转化为实时 Three.js/WebGL 粒子雨景。用户可以拖动降雨曲线，让雨幕、峰值瀑布、水面波纹、坐标轴与雨声随数据同步变化。
 
