@@ -10,25 +10,21 @@ Rainform（数据成雨）把 00:00–24:00 的 25 个逐时降雨数据点转�
 
 Rainform turns 25 hourly rainfall values from 00:00–24:00 into an interactive Three.js/WebGL landscape. Editing the curve reshapes the rain curtain, peak waterfall, water ripples, axis system and rain audio in real time.
 
-> **许可说明：** 本仓库源码公开可见，但只授权非商业使用，不属于 OSI 定义下允许任意商业用途的开源软件。商业使用、商业产品集成、广告或品牌项目均未获授权。
+> **源码许可 / Source terms:** 源码仅授权非商业学习、修改与分发；禁止商业使用、商业产品集成、广告和品牌项目。Source is available for noncommercial use only and is not OSI-approved open-source software. See [LICENSE](LICENSE) and [COMMERCIAL_USE.md](COMMERCIAL_USE.md).
 
 ## 在线体验 / Live
 
-- Production: <https://rainform.pages.dev/>
-- Source: <https://github.com/afterimage-lab/Rainform>
-- Recommended: a desktop browser with WebGL2 and hardware acceleration
-- Mobile: landscape orientation; X in-app browser users may need to choose “Open in Browser”
+- Experience Rainform: <https://rainform.pages.dev/>
+- Best experienced in a desktop browser with WebGL2 and hardware acceleration
+- Mobile devices require landscape orientation
 
 ## 功能 / Highlights
 
-- 25 个逐时降雨数据点与实时可拖拽折线
-- 数据驱动的粒子密度、瀑布、冲击、水面与坐标反馈
-- 中英文界面与 X 内置浏览器启动处理
-- 桌面拖拽视角、双击重置、声音切换与精确输入
-- 移动端横屏门控、安全区域和方向切换恢复
-- 生产环境不包含视觉调参控制台和 Source Map
-- Cloudflare Pages 安全响应头与静态资源缓存策略
-- 项目雨声由仓库内脚本确定性生成，不使用外部录音素材
+- 25 个逐时降雨数据点与实时可拖拽曲线 / 25 hourly rainfall values with a live draggable curve
+- 数据驱动的粒子雨幕、峰值瀑布、水面波纹、坐标轴与雨声 / Data-driven rain, waterfall, water, axes and sound
+- 桌面端视角拖拽、双击重置、声音切换与精确数据输入 / Desktop camera, reset, sound and precise editing
+- 移动端横屏适配、安全区域与方向切换恢复 / Mobile landscape, safe-area and orientation recovery
+- 中英文界面 / Chinese and English interface
 
 ## 本地开发 / Development
 
@@ -39,27 +35,14 @@ npm ci
 npm run dev
 ```
 
-The local visual tuning console is enabled only in Vite development mode. It is deliberately removed from production builds.
-
-## 构建与验收 / Build and validation
+## 构建 / Build
 
 ```bash
 npm run check
 npm run preview
 ```
 
-`npm run check` validates project metadata, required notices, Chinese/English translation key parity, production build output, absence of source maps and exclusion of the development tuning console.
-
-The bundled rain loop is generated from code with `npm run audio:generate`; it contains no third-party recording or sample.
-
-Before a visual or interaction change is merged, test:
-
-- 390×844 mobile portrait
-- 844×390 mobile landscape
-- 1366×768 desktop
-- 1920×1080 desktop
-- portrait → landscape → portrait → landscape
-- drag, double-click reset, editor, language, sound and refresh behavior
+`npm run check` validates the Chinese/English interface and production build. Contributor validation requirements are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 项目结构 / Structure
 
@@ -76,9 +59,7 @@ Before a visual or interaction change is merged, test:
 └── .github/                # CI, dependency updates and contribution templates
 ```
 
-See [Architecture](docs/ARCHITECTURE.md) before changing the rendering lifecycle.
-
-## 使用与集成 / Using Rainform
+## 使用与许可 / Usage and license
 
 Noncommercial study, modification and redistribution are permitted under the [PolyForm Noncommercial License 1.0.0](LICENSE). Every copy or derived work must retain:
 
@@ -86,21 +67,16 @@ Noncommercial study, modification and redistribution are permitted under the [Po
 Required Notice: Rainform / 数据成雨 © 2026 afterimage — https://rainform.pages.dev/
 ```
 
-Do not copy the minified production bundle for integration. Work from the source repository, preserve the license and notice, and keep Rainform-derived files clearly identified. Read the [integration policy](docs/INTEGRATION.md) before combining Rainform with another repository.
+Attribution alone does not make commercial use permissible. Work from this source repository, preserve the license and notice, and read the [integration policy](docs/INTEGRATION.md) before combining Rainform with another project.
 
-## 品牌 / Brand
+The source license does not grant rights to use the Rainform / 数据成雨 name, logo or visual identity as another product's branding. See [TRADEMARKS.md](TRADEMARKS.md).
 
-The source license does not grant rights to use the Rainform / 数据成雨 name, logo or visual identity as the name or branding of another product. Descriptive attribution is welcome and required; implying an official fork, endorsement or partnership is not permitted without written approval. See [TRADEMARKS.md](TRADEMARKS.md).
+Copyright © 2026 afterimage.
 
-## 贡献与安全 / Contributing and security
+## 项目文档 / Project documentation
 
+- Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Security reports: [SECURITY.md](SECURITY.md)
 - Release history: [CHANGELOG.md](CHANGELOG.md)
 - Third-party notices: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-
-## 许可 / License
-
-Copyright © 2026 afterimage.
-
-Source is available under the [PolyForm Noncommercial License 1.0.0](LICENSE). Commercial use is not permitted. See [COMMERCIAL_USE.md](COMMERCIAL_USE.md) for practical examples.
