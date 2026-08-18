@@ -82,7 +82,9 @@ const messages = {
     weatherStatusReady: ({ time, precipitation }) => `Open-Meteo 已同步 · ${time} · 当前 ${Number(precipitation).toFixed(1)} mm/h`,
     weatherStatusDenied: '位置权限被拒绝，当前使用内置数据',
     weatherStatusUnavailable: '无法获取位置，当前使用内置数据',
-    weatherStatusError: '实时天气暂不可用，当前使用内置数据'
+    weatherStatusError: '实时天气暂不可用，当前使用内置数据',
+    weatherStatusErrorSynced: '实时天气刷新失败，保留上次同步数据',
+    weatherStatusErrorManual: '实时天气刷新失败，保留手动数据'
   },
   en: {
     documentTitle: 'Rainform · Data into Rain',
@@ -141,7 +143,9 @@ const messages = {
     weatherStatusReady: ({ time, precipitation }) => `Open-Meteo synced · ${time} · ${Number(precipitation).toFixed(1)} mm/h now`,
     weatherStatusDenied: 'Location permission denied; using built-in data',
     weatherStatusUnavailable: 'Location is unavailable; using built-in data',
-    weatherStatusError: 'Live weather is temporarily unavailable; using built-in data'
+    weatherStatusError: 'Live weather is temporarily unavailable; using built-in data',
+    weatherStatusErrorSynced: 'Live weather refresh failed; keeping the last synced data',
+    weatherStatusErrorManual: 'Live weather refresh failed; keeping manual data'
   }
 };
 
@@ -1348,12 +1352,16 @@ function syncLiveWeatherStatus({ state, data = null } = {}) {
     return;
   }
 
-  const messageKey = {
-    loading: 'weatherStatusLoading',
-    denied: 'weatherStatusDenied',
-    unavailable: 'weatherStatusUnavailable',
-    error: 'weatherStatusError'
-  }[state] || 'weatherStatusError';
+  const messageKey = state === 'error'
+    ? rainfallSource === 'open-meteo'
+      ? 'weatherStatusErrorSynced'
+      : rainfallSource === 'manual' ? 'weatherStatusErrorManual' : 'weatherStatusError'
+    : {
+      loading: 'weatherStatusLoading',
+      denied: 'weatherStatusDenied',
+      unavailable: 'weatherStatusUnavailable',
+      error: 'weatherStatusError'
+    }[state] || 'weatherStatusError';
   liveWeatherStatusText.textContent = i18n(messageKey);
 }
 

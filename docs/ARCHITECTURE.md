@@ -12,7 +12,7 @@ Rainform is a client-only Vite application. No server runtime, database or secre
 
 ## Rendering model
 
-The 25 values from 00:00 through 24:00 are the single source of truth for visual rainfall. They start from the built-in curve, then become Open-Meteo hourly precipitation after location permission is granted. If location or the network is unavailable, the built-in curve remains active. Derived systems include:
+The 25 values from 00:00 through 24:00 are the single source of truth for visual rainfall. They start from the built-in curve, then become Open-Meteo hourly precipitation after location permission is granted. If the initial location or weather request fails, the built-in curve remains active. If a later refresh fails after synchronization, the last synchronized curve remains active; if the user has edited the curve manually, those manual values remain active instead. Derived systems include:
 
 - axis geometry and selected-hour feedback;
 - rain chains, ambient rain and downpour sampling;

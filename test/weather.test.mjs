@@ -67,17 +67,18 @@ const rainfallPayload = {
   }
 };
 
-test('extractRainfallCurve returns the current local day and prioritizes current precipitation', () => {
+test('extractRainfallCurve returns the current local day and keeps current precipitation separate', () => {
   assert.equal(typeof weather.extractRainfallCurve, 'function');
 
   const result = weather.extractRainfallCurve(rainfallPayload);
 
   assert.deepEqual(result.values, [
     0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
-    0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 6.4, 1.6, 1.7,
+    0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
     1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4
   ]);
   assert.equal(result.currentTime, '2026-08-19T15:00');
+  assert.equal(result.currentPrecipitation, 6.4);
   assert.equal(result.timezone, 'Asia/Shanghai');
 });
 
@@ -105,6 +106,93 @@ test('fetchLiveRainfall passes a complete Open-Meteo response through the curve 
   assert.equal(new URL(requestedUrl).searchParams.get('latitude'), '31.2304');
   assert.deepEqual(result.values.slice(0, 3), [0, 0.1, 0.2]);
   assert.equal(result.currentPrecipitation, 6.4);
+});
+
+test('fetchLiveRainfall passes an abort signal and clears its request timeout', async () => {
+  assert.equal(typeof weather.fetchLiveRainfall, 'function');
+
+  let requestOptions;
+  let timeoutDelay;
+  let clearedTimer;
+  const result = await weather.fetchLiveRainfall({
+    latitude: 31.2304,
+    longitude: 121.4737,
+    timeoutMs: 3210,
+    setTimeoutImpl(callback, delay) {
+      assert.equal(typeof callback, 'function');
+      timeoutDelay = delay;
+      return 'timer-token';
+    },
+    clearTimeoutImpl(timer) {
+      clearedTimer = timer;
+    },
+    fetchImpl: async (_url, options) => {
+      requestOptions = options;
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return rainfallPayload;
+        }
+      };
+    }
+  });
+
+  assert.ok(requestOptions.signal instanceof AbortSignal);
+  assert.equal(requestOptions.signal.aborted, false);
+  assert.equal(timeoutDelay, 3210);
+  assert.equal(clearedTimer, 'timer-token');
+  assert.equal(result.currentPrecipitation, 6.4);
+});
+
+test('fetchLiveRainfall aborts the request when its timeout callback runs', async () => {
+  let signalWasAborted = false;
+  const result = await weather.fetchLiveRainfall({
+    latitude: 31.2304,
+    longitude: 121.4737,
+    setTimeoutImpl(callback) {
+      callback();
+      return 'timer-token';
+    },
+    clearTimeoutImpl() {},
+    fetchImpl: async (_url, options) => {
+      signalWasAborted = Boolean(options?.signal?.aborted);
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return rainfallPayload;
+        }
+      };
+    }
+  });
+
+  assert.equal(signalWasAborted, true);
+  assert.equal(result.currentPrecipitation, 6.4);
+});
+
+test('fetchLiveRainfall clears its timeout when the request fails', async () => {
+  let clearCount = 0;
+
+  await assert.rejects(
+    weather.fetchLiveRainfall({
+      latitude: 31.2304,
+      longitude: 121.4737,
+      setTimeoutImpl() {
+        return 'timer-token';
+      },
+      clearTimeoutImpl(timer) {
+        assert.equal(timer, 'timer-token');
+        clearCount += 1;
+      },
+      fetchImpl: async () => {
+        throw new Error('network unavailable');
+      }
+    }),
+    /network unavailable/
+  );
+
+  assert.equal(clearCount, 1);
 });
 
 test('extractRainfallCurve rejects a response that cannot provide all 25 points', () => {

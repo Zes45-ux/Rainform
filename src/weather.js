@@ -1,6 +1,7 @@
 export const OPEN_METEO_ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
 export const RAINFALL_POINT_COUNT = 25;
 export const WEATHER_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+export const WEATHER_REQUEST_TIMEOUT_MS = 15 * 1000;
 
 export function buildOpenMeteoUrl({ latitude, longitude }) {
   const url = new URL(OPEN_METEO_ENDPOINT);
@@ -78,8 +79,6 @@ export function extractRainfallCurve(payload) {
     current.precipitation,
     'Current precipitation'
   );
-  const currentHour = Number(currentHourKey.slice(11, 13));
-  if (currentHour >= 0 && currentHour < 24) values[currentHour] = currentPrecipitation;
 
   return {
     values,
@@ -90,17 +89,34 @@ export function extractRainfallCurve(payload) {
   };
 }
 
-export async function fetchLiveRainfall({ latitude, longitude, fetchImpl = globalThis.fetch }) {
+export async function fetchLiveRainfall({
+  latitude,
+  longitude,
+  fetchImpl = globalThis.fetch,
+  timeoutMs = WEATHER_REQUEST_TIMEOUT_MS,
+  setTimeoutImpl = globalThis.setTimeout,
+  clearTimeoutImpl = globalThis.clearTimeout
+}) {
   if (typeof fetchImpl !== 'function') throw new TypeError('A fetch implementation is required');
-
-  const response = await fetchImpl(buildOpenMeteoUrl({ latitude, longitude }), {
-    headers: { Accept: 'application/json' }
-  });
-  if (!response?.ok) {
-    throw new Error(`Open-Meteo request failed: ${response?.status ?? 'unknown'}`);
+  if (typeof AbortController !== 'function') {
+    throw new Error('AbortController is unavailable');
   }
 
-  return extractRainfallCurve(await response.json());
+  const controller = new AbortController();
+  const timeoutId = setTimeoutImpl(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchImpl(buildOpenMeteoUrl({ latitude, longitude }), {
+      headers: { Accept: 'application/json' },
+      signal: controller.signal
+    });
+    if (!response?.ok) {
+      throw new Error(`Open-Meteo request failed: ${response?.status ?? 'unknown'}`);
+    }
+
+    return extractRainfallCurve(await response.json());
+  } finally {
+    clearTimeoutImpl(timeoutId);
+  }
 }
 
 export function requestBrowserLocation(
