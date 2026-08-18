@@ -1,6 +1,6 @@
 # Rainform / 数据成雨
 
-[![Live](https://img.shields.io/badge/live-rainform.pages.dev-111111)](https://rainform.pages.dev/)
+[![Live](https://img.shields.io/badge/live-rainform.vercel.app-111111)](https://rainform.vercel.app/)
 [![CI](https://github.com/afterimage-lab/Rainform/actions/workflows/ci.yml/badge.svg)](https://github.com/afterimage-lab/Rainform/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-4c4c4c)](LICENSE)
 
@@ -14,7 +14,7 @@ Rainform turns 25 hourly rainfall values from 00:00–24:00 into an interactive 
 
 ## 在线体验 / Live
 
-- Experience Rainform: <https://rainform.pages.dev/>
+- Experience Rainform: <https://rainform.vercel.app/>
 - Best experienced in a desktop browser with WebGL2 and hardware acceleration
 - Mobile devices require landscape orientation
 
