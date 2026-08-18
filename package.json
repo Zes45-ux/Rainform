@@ -20,6 +20,7 @@
   "scripts": {
     "audio:generate": "node scripts/generate-rain-audio.mjs",
     "dev": "vite --host 0.0.0.0",
+    "test": "node --test",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "check:project": "node scripts/check-project.mjs",

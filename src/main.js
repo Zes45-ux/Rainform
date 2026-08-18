@@ -2,6 +2,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { createLiveWeatherController } from './weather.js';
 
 function isXEmbeddedLaunch() {
   const userAgent = navigator.userAgent || '';
@@ -76,7 +77,12 @@ const messages = {
     dataValueError: '降雨量必须是大于或等于 0 的有限数字',
     webglTitle: '无法显示实时雨景',
     webglUnavailable: '此设备或浏览器无法创建 WebGL2 图形环境。请升级浏览器，或确认硬件加速已开启。',
-    webglInterrupted: '图形环境暂时中断，正在等待浏览器恢复。'
+    webglInterrupted: '图形环境暂时中断，正在等待浏览器恢复。',
+    weatherStatusLoading: '正在获取当前位置的实时降雨…',
+    weatherStatusReady: ({ time, precipitation }) => `Open-Meteo 已同步 · ${time} · 当前 ${Number(precipitation).toFixed(1)} mm/h`,
+    weatherStatusDenied: '位置权限被拒绝，当前使用内置数据',
+    weatherStatusUnavailable: '无法获取位置，当前使用内置数据',
+    weatherStatusError: '实时天气暂不可用，当前使用内置数据'
   },
   en: {
     documentTitle: 'Rainform · Data into Rain',
@@ -130,7 +136,12 @@ const messages = {
     dataValueError: 'Rainfall must be a finite number greater than or equal to 0',
     webglTitle: 'Unable to display the live rain scene',
     webglUnavailable: 'This device or browser could not create a WebGL2 graphics context. Update the browser or make sure hardware acceleration is enabled.',
-    webglInterrupted: 'The graphics context was interrupted. Waiting for the browser to restore it.'
+    webglInterrupted: 'The graphics context was interrupted. Waiting for the browser to restore it.',
+    weatherStatusLoading: 'Getting live rainfall for your location…',
+    weatherStatusReady: ({ time, precipitation }) => `Open-Meteo synced · ${time} · ${Number(precipitation).toFixed(1)} mm/h now`,
+    weatherStatusDenied: 'Location permission denied; using built-in data',
+    weatherStatusUnavailable: 'Location is unavailable; using built-in data',
+    weatherStatusError: 'Live weather is temporarily unavailable; using built-in data'
   }
 };
 
@@ -180,6 +191,8 @@ const rainfallLineChart = document.querySelector('#rainfall-line-chart');
 const rainfallChartTime = document.querySelector('#rainfall-chart-time');
 const rainfallChartValue = document.querySelector('#rainfall-chart-value');
 const rainfallPreciseEditor = document.querySelector('#rainfall-precise-editor');
+const liveWeatherStatus = document.querySelector('#live-weather-status');
+const liveWeatherStatusText = document.querySelector('#live-weather-status-text');
 root.dataset.locale = locale;
 root.dataset.launchContext = isXEmbedded ? 'x-embedded' : 'standard';
 
@@ -219,6 +232,7 @@ const defaultRainfall = Object.freeze([
 // Rainfall edits are intentionally session-only. Every reload starts from the
 // built-in curve so an older browser value cannot override the current demo.
 let activeRainfall = [...defaultRainfall];
+let rainfallSource = 'built-in';
 let rainfallMax = Math.max(...activeRainfall);
 let axisMax = 12.8;
 let peakWaterfallRanges = [];
@@ -1246,6 +1260,7 @@ function syncRuntimeDatasets() {
   root.dataset.rainEdgeMode = isPhoneLandscapeViewport() ? 'mobile-crisp' : 'authored';
   root.dataset.rainfallMax = String(Number(rainfallMax.toFixed(3)));
   root.dataset.axisMax = String(Number(axisMax.toFixed(3)));
+  root.dataset.rainfallSource = rainfallSource;
   root.dataset.rainfallValues = activeRainfall.join(',');
   root.dataset.rainfallPointCount = String(activeRainfall.length);
   const zeroRainfallHours = activeRainfall
@@ -1298,7 +1313,7 @@ function syncRuntimeDatasets() {
   root.dataset.axisLabelCount = String(axisSystem.labelCount);
 }
 
-function applyRainfallData(values) {
+function applyRainfallData(values, { source = 'manual' } = {}) {
   if (!Array.isArray(values) || values.length !== defaultRainfall.length) {
     throw new TypeError(i18n('dataLengthError', { count: defaultRainfall.length }));
   }
@@ -1311,12 +1326,58 @@ function applyRainfallData(values) {
   });
 
   activeRainfall = nextValues;
+  rainfallSource = source;
   refreshRainfallMetrics();
   rebuildRainfallSystems();
   updateRainSoundFromData();
   state.readoutKey = '';
   updateDomState(true);
 }
+
+function syncLiveWeatherStatus({ state, data = null } = {}) {
+  root.dataset.weatherStatus = state || 'error';
+  if (!liveWeatherStatus || !liveWeatherStatusText) return;
+
+  liveWeatherStatus.dataset.state = state || 'error';
+  if (state === 'ready' && data) {
+    const time = String(data.currentTime || '').slice(11, 16) || '--:--';
+    liveWeatherStatusText.textContent = i18n('weatherStatusReady', {
+      time,
+      precipitation: data.currentPrecipitation
+    });
+    return;
+  }
+
+  const messageKey = {
+    loading: 'weatherStatusLoading',
+    denied: 'weatherStatusDenied',
+    unavailable: 'weatherStatusUnavailable',
+    error: 'weatherStatusError'
+  }[state] || 'weatherStatusError';
+  liveWeatherStatusText.textContent = i18n(messageKey);
+}
+
+const liveWeatherController = createLiveWeatherController({
+  onData(data, coordinates) {
+    applyRainfallData(data.values, { source: 'open-meteo' });
+    root.dataset.weatherProvider = 'open-meteo';
+    root.dataset.weatherLatitude = String(coordinates.latitude);
+    root.dataset.weatherLongitude = String(coordinates.longitude);
+    root.dataset.weatherTimezone = data.timezone || 'auto';
+    root.dataset.weatherCurrentTime = data.currentTime || '';
+    root.dataset.weatherCurrentPrecipitation = Number(data.currentPrecipitation).toFixed(3);
+    root.dataset.weatherLastSync = new Date().toISOString();
+  },
+  onStatus(status) {
+    syncLiveWeatherStatus(status);
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) liveWeatherController.refresh();
+});
+window.addEventListener('pagehide', () => liveWeatherController.stop(), { once: true });
+liveWeatherController.start();
 
 function rebuildRainfallSystems() {
   const dry = rainfallMax <= 0;

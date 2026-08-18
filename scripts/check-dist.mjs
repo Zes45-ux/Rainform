@@ -16,7 +16,7 @@ async function walk(directory) {
 }
 
 const files = await walk(dist);
-const relativeFiles = files.map(file => path.relative(dist, file));
+const relativeFiles = files.map(file => path.relative(dist, file).split(path.sep).join('/'));
 const requiredFiles = ['index.html', '_headers', 'robots.txt', 'favicon.png', 'audio/rain-loop.wav'];
 
 for (const file of requiredFiles) {
