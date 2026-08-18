@@ -66,7 +66,7 @@ npm run preview
 Noncommercial study, modification and redistribution are permitted under the [PolyForm Noncommercial License 1.0.0](LICENSE). Every copy or derived work must retain:
 
 ```text
-Required Notice: Rainform / 数据成雨 © 2026 afterimage — https://rainform.pages.dev/
+Required Notice: Rainform / 数据成雨 © 2026 afterimage — https://rainform.vercel.app/
 ```
 
 Attribution alone does not make commercial use permissible. Work from this source repository, preserve the license and notice, and read the [integration policy](docs/INTEGRATION.md) before combining Rainform with another project.
