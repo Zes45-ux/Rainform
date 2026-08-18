@@ -21,6 +21,7 @@ Rainform turns 25 hourly rainfall values from 00:00–24:00 into an interactive 
 ## 功能 / Highlights
 
 - 25 个逐时降雨数据点与实时可拖拽曲线 / 25 hourly rainfall values with a live draggable curve
+- 自动读取浏览器位置并通过 Open-Meteo 同步实时降雨 / Browser location and Open-Meteo live rainfall sync
 - 数据驱动的粒子雨幕、峰值瀑布、水面波纹、坐标轴与雨声 / Data-driven rain, waterfall, water, axes and sound
 - 桌面端视角拖拽、双击重置、声音切换与精确数据输入 / Desktop camera, reset, sound and precise editing
 - 移动端横屏适配、安全区域与方向切换恢复 / Mobile landscape, safe-area and orientation recovery
@@ -52,6 +53,7 @@ npm run preview
 ├── src/
 │   ├── bootstrap.js        # Locale, mobile gate and deferred startup
 │   ├── main.js             # Three.js scene, data model and interactions
+│   ├── weather.js          # Open-Meteo client, location and refresh controller
 │   └── styles.css          # Responsive application styles
 ├── public/                 # Runtime assets and Cloudflare headers
 ├── scripts/                # Validation and maintainer media tools

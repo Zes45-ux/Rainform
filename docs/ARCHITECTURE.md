@@ -7,11 +7,12 @@ Rainform is a client-only Vite application. No server runtime, database or secre
 1. `index.html` renders the application shell and mobile landscape gate.
 2. `src/bootstrap.js` selects Chinese or English, prepares rain audio and delays the WebGL bundle while a phone is in portrait.
 3. `src/main.js` creates the Three.js scene after the viewport is eligible.
-4. Viewport and orientation events update layout without initializing a second scene.
+4. `src/weather.js` requests browser coordinates, loads the current local day's hourly precipitation from Open-Meteo, and refreshes it every ten minutes.
+5. Viewport and orientation events update layout without initializing a second scene.
 
 ## Rendering model
 
-The 25 values from 00:00 through 24:00 are the single source of truth for visual rainfall. Derived systems include:
+The 25 values from 00:00 through 24:00 are the single source of truth for visual rainfall. They start from the built-in curve, then become Open-Meteo hourly precipitation after location permission is granted. If the initial location or weather request fails, the built-in curve remains active. If a later refresh fails after synchronization, the last synchronized curve remains active; if the user has edited the curve manually, those manual values remain active instead. Derived systems include:
 
 - axis geometry and selected-hour feedback;
 - rain chains, ambient rain and downpour sampling;
